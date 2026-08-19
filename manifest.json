@@ -1,3 +1,6 @@
 {
-  "name": "AIventure"
+  "name": "AIventure",
+  "ai": {
+    "provider": "vifu-runtime"
+  }
 }

@@ -26,6 +26,11 @@ export class VifuModelService implements ModelBackend, OnDestroy {
   private history: any[] = [];
   private pendingToolResults: Array<{ resolve: (result: any) => void; timeout: ReturnType<typeof setTimeout> }> = [];
   private hostReadyAttempt?: Promise<void>;
+  private readonly gameMaster = hub.agent({
+    agentId: 'game-master',
+    name: 'AIventure Game Master',
+    kind: 'npc'
+  });
 
   constructor() {
     EventBus.on('model-tool-execution-result', this.handleToolResult, this);
@@ -34,6 +39,7 @@ export class VifuModelService implements ModelBackend, OnDestroy {
   ngOnDestroy() {
     EventBus.off('model-tool-execution-result', this.handleToolResult, this);
     this.clearPendingToolResults();
+    this.gameMaster.dispose();
   }
 
   public reset() {
@@ -233,8 +239,7 @@ export class VifuModelService implements ModelBackend, OnDestroy {
 
   async *generateTextStream(tool_list: string, context: string, prompt: string): AsyncGenerator<string> {
     const status = await this.waitForHub();
-    const generateText = this.hubAi().generateText;
-    if (!generateText) {
+    if (!this.isHostedHubRuntime(status)) {
       const deterministic = this.shouldUseDeterministicFallback(status)
         ? this.deterministicToolCall(tool_list, context, prompt)
         : null;
@@ -246,7 +251,8 @@ export class VifuModelService implements ModelBackend, OnDestroy {
     this.history.push({ role: 'user', content: userMessage });
 
     try {
-      const result = await generateText({
+      const result: any = await this.gameMaster.run({
+        operation: 'generateText',
         model: 'basic',
         messages: this.messagesForTurn(tool_list),
         tools: this.constructHubTools(tool_list),

@@ -98,6 +98,17 @@ Deploy:
 vf deploy
 ```
 
+### Connect the Vifu Agent App
+
+AIventure uses the `game-master` Agent from a Vifu App. The VifuHub Web host sends each turn to that Agent.
+
+1. Create an Agent with the slug `game-master` in the Vifu Dashboard.
+2. Connect a Provider to the Agent.
+3. Copy the VifuHub App ID from the `vf deploy` result.
+4. Open **Publish & API** for the Vifu App.
+5. Paste the VifuHub App ID under **VifuHub App**. Then select **Connect App**.
+6. Open the published game. The **Logs** page shows each Agent turn and tool call.
+
 For local development, simple tool commands use a deterministic matcher so the
 core game remains easy to try.
 
